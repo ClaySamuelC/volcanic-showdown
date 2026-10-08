@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Volcanic Showdown</title>
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="style.css" />
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/build/three.module.js" } }
+  </script>
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- Main menu -->
+  <section id="screen-menu" class="screen">
+    <div class="panel">
+      <h1>Volcanic <span>Showdown</span></h1>
+      <p class="tagline">Isometric 1v1 arena. Best of 7. Last hero standing takes the round.</p>
+      <label>Your name <input id="name" maxlength="16" placeholder="Challenger" /></label>
+      <div class="row">
+        <button id="btn-practice" class="primary">Practice vs AI</button>
+      </div>
+      <h2>Multiplayer</h2>
+      <div class="row">
+        <button id="btn-create" class="primary secondary">Create lobby</button>
+      </div>
+      <div class="row join">
+        <input id="code" maxlength="3" inputmode="numeric" placeholder="000" />
+        <button id="btn-join">Join with code</button>
+      </div>
+      <p id="menu-error" class="error"></p>
+      <details class="howto" id="server-details">
+        <summary>Multiplayer server</summary>
+        <label>WebSocket URL of a running game server (<code>npm start</code>)
+          <input id="server-url" placeholder="wss://your-server.example.com" />
+        </label>
+        <p class="hint">Practice mode runs entirely in your browser. Multiplayer lobbies need the Node server from this repo hosted somewhere reachable by both players.</p>
+      </details>
+      <details class="howto">
+        <summary>How to play</summary>
+        <ul>
+          <li><b>Right-click</b> or <b>arrow keys</b> to move. Mouse aims everything.</li>
+          <li><b>Left click</b> fires your basic attack toward the cursor.</li>
+          <li><b>Q / W / E</b> basic abilities, <b>R</b> ultimate (starts on cooldown).</li>
+          <li>12 health each. Health packs heal 3. After 45s the lava closes in.</li>
+          <li>Rounds end on death or at 2 minutes (higher health wins). First to 4 rounds wins the match.</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <!-- Practice setup -->
+  <section id="screen-practice" class="screen hidden">
+    <div class="panel wide">
+      <h2>Practice vs AI</h2>
+      <h3>Your hero</h3>
+      <div id="practice-hero-grid" class="hero-grid"></div>
+      <div id="practice-hero-detail" class="hero-detail"></div>
+      <div class="practice-opts">
+        <div>
+          <h3>Opponent</h3>
+          <div id="bot-hero" class="chip-row"></div>
+        </div>
+        <div>
+          <h3>Difficulty</h3>
+          <div id="bot-difficulty" class="chip-row"></div>
+        </div>
+      </div>
+      <div class="row space">
+        <button id="btn-practice-back">Back</button>
+        <button id="btn-practice-start" class="primary" disabled>Start practice</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Lobby / hero select -->
+  <section id="screen-lobby" class="screen hidden">
+    <div class="panel wide">
+      <div class="lobby-head">
+        <div>
+          <div class="label">Lobby code</div>
+          <div id="lobby-code" class="code">000</div>
+          <div class="hint">Share this code. The other player joins from the main menu.</div>
+        </div>
+        <div id="lobby-players" class="players"></div>
+      </div>
+      <h2>Choose your hero</h2>
+      <div id="hero-grid" class="hero-grid"></div>
+      <div id="hero-detail" class="hero-detail"></div>
+      <div class="row space">
+        <button id="btn-leave">Leave</button>
+        <button id="btn-ready" class="primary" disabled>Ready</button>
+      </div>
+      <p id="lobby-error" class="error"></p>
+    </div>
+  </section>
+
+  <!-- In-game HUD -->
+  <section id="hud" class="hidden">
+    <div id="scoreboard">
+      <div id="score-left" class="score"><span class="name"></span><span class="pips"></span></div>
+      <div id="round-info"><div id="round-label">Round 1</div><div id="round-timer">0:00</div></div>
+      <div id="score-right" class="score"><span class="pips"></span><span class="name"></span></div>
+    </div>
+    <button id="btn-quit" title="Leave match">Leave</button>
+    <div id="announce" class="hidden"></div>
+    <div id="bottom-bar">
+      <div id="hp-bar"><div id="hp-fill"></div><div id="shield-fill"></div><div id="hp-text">12 / 12</div></div>
+      <div id="abilities"></div>
+      <div id="status"></div>
+    </div>
+    <div id="lava-warning" class="hidden">The lava is rising!</div>
+  </section>
+
+  <!-- Match end -->
+  <section id="screen-end" class="screen hidden">
+    <div class="panel">
+      <h1 id="end-title">Victory</h1>
+      <p id="end-score"></p>
+      <div class="row"><button id="btn-back" class="primary">Continue</button></div>
+    </div>
+  </section>
+
+  <div id="toast" class="hidden"></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
