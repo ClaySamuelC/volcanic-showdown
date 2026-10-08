@@ -65,5 +65,17 @@ All tuning numbers live in `shared/heroes.js`; ability behaviour lives in `game/
 - `public/` – three.js client with an orthographic isometric camera, snapshot interpolation and a DOM HUD.
   `public/js/local.js` drives the simulation locally for practice mode using the same message interface.
 - `shared/` – hero data and arena constants used by everything.
-- `scripts/build-pages.mjs` – assembles the static client into `dist/`; `.github/workflows/pages.yml`
-  deploys it to GitHub Pages on every push to `main`.
+- `scripts/build-pages.mjs` – assembles the static client into `dist/`.
+
+## Deploying to GitHub Pages
+
+```bash
+npm run deploy:pages
+```
+
+This builds `dist/` and force-pushes it to the `gh-pages` branch of `origin`; GitHub Pages is configured to
+serve that branch. Re-run it after any client change you want live.
+
+`scripts/pages-workflow.yml` is an equivalent GitHub Actions workflow that deploys on every push to `main`.
+To use it instead, grant your `gh` token the `workflow` scope (`gh auth refresh -s workflow`), copy the file
+to `.github/workflows/pages.yml`, and switch the Pages source to "GitHub Actions" in the repository settings.
