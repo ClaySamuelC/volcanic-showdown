@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Volcanic Showdown</title>
+  <link rel="icon" href="data:," />
+  <link rel="preload" href="fonts/Cinzel-Variable.ttf" as="font" type="font/ttf" crossorigin />
+  <link rel="stylesheet" href="style.css" />
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/build/three.module.js" } }
+  </script>
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- Main menu -->
+  <section id="screen-menu" class="screen">
+    <div class="panel menu-panel">
+      <header class="brand">
+        <div class="eyebrow">Isometric 1v1 Arena</div>
+        <h1 class="title">Volcanic <span>Showdown</span></h1>
+        <p class="tagline">Duel on a shrinking island. Last hero standing takes the round.</p>
+      </header>
+
+      <label class="field">
+        <span class="field-label">Your name</span>
+        <input id="name" maxlength="16" placeholder="Challenger" autocomplete="off" spellcheck="false" />
+      </label>
+
+      <div class="row">
+        <button id="btn-practice" class="primary large">Practice vs AI</button>
+      </div>
+
+      <div class="divider"><span>Multiplayer</span></div>
+
+      <div class="row">
+        <button id="btn-create" class="primary secondary">Create lobby</button>
+      </div>
+      <div class="row join">
+        <input id="code" maxlength="3" inputmode="numeric" placeholder="000" aria-label="Lobby code" autocomplete="off" />
+        <button id="btn-join">Join with code</button>
+      </div>
+      <p id="menu-error" class="error" role="alert"></p>
+
+      <div class="menu-footer">
+        <button id="btn-howto" class="ghost" type="button">How to play</button>
+        <button id="btn-options" class="ghost" type="button">Options</button>
+      </div>
+      <p class="credit">Music by MintoDog</p>
+    </div>
+  </section>
+
+  <!-- How to play -->
+  <section id="screen-howto" class="screen modal hidden">
+    <div class="panel wide howto-panel">
+      <header class="panel-head">
+        <h2>How to play</h2>
+        <button id="btn-howto-close" class="icon-btn" type="button" aria-label="Close">&times;</button>
+      </header>
+      <div class="howto-grid">
+        <div class="howto-col">
+          <h3>Controls</h3>
+          <ul class="keys">
+            <li><kbd>RMB</kbd><span>Move. Your hero turns toward where it is walking.</span></li>
+            <li><kbd>LMB</kbd><span>Basic attack toward the cursor. Hold to repeat.</span></li>
+            <li><kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd><span>Abilities, aimed at the cursor.</span></li>
+            <li><kbd>R</kbd><span>Ultimate. Starts each round on cooldown.</span></li>
+            <li><kbd>S</kbd><span>Stop moving.</span></li>
+            <li><kbd>Alt</kbd><span>Hold over an ability for full details.</span></li>
+            <li><kbd>Esc</kbd><span>Options.</span></li>
+            <li><kbd>M</kbd><span>Toggle music.</span></li>
+          </ul>
+        </div>
+        <div class="howto-col">
+          <h3>The arena</h3>
+          <ul class="rules">
+            <li>A health pack with <span data-arena="healthPackHp"></span> health appears in the middle every <span data-arena="healthPackInterval"></span>s. The last hit heals <span data-arena="healthPackHeal"></span>.</li>
+            <li><span data-arena="kegCount"></span> powder kegs appear every <span data-arena="kegInterval"></span>s and the previous ones disappear. They have <span data-arena="kegHp"></span> health and explode <span data-arena="kegFuse"></span>s after they break.</li>
+            <li>Rocks have <span data-arena="propHp"></span> health. Broken ones return and damaged ones heal every <span data-arena="propReset"></span>s. Four pillars stand in a square around the center and never move.</li>
+            <li>After <span data-arena="shrinkStart"></span> seconds the lava closes in. Standing in it burns <span data-arena="lavaDps"></span> health per second.</li>
+            <li>A round ends on death, or after <span data-arena="roundTimeLimit"></span>s to the hero with more health. First to <span data-arena="roundsToWin"></span> rounds wins the match.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="row end">
+        <button id="btn-howto-back" class="primary" type="button">Got it</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Practice setup -->
+  <section id="screen-practice" class="screen hidden">
+    <div class="panel wide">
+      <header class="panel-head">
+        <div>
+          <div class="eyebrow">Solo</div>
+          <h2>Practice vs AI</h2>
+        </div>
+      </header>
+      <h3>Your hero</h3>
+      <div id="practice-hero-grid" class="hero-grid"></div>
+      <div id="practice-hero-detail" class="hero-detail"></div>
+      <div class="practice-opts">
+        <div>
+          <h3>Opponent</h3>
+          <div id="bot-hero" class="chip-row"></div>
+        </div>
+        <div>
+          <h3>Difficulty</h3>
+          <div id="bot-difficulty" class="chip-row"></div>
+        </div>
+      </div>
+      <div class="row space actions">
+        <button id="btn-practice-back" class="ghost">Back</button>
+        <button id="btn-practice-options" class="ghost" type="button">Options</button>
+        <button id="btn-practice-start" class="primary" disabled>Start practice</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Lobby / hero select -->
+  <section id="screen-lobby" class="screen hidden">
+    <div class="panel wide">
+      <div class="lobby-head">
+        <div class="lobby-code">
+          <div class="label">Lobby code</div>
+          <div id="lobby-code" class="code">000</div>
+          <div class="hint">Share this code. Your opponent joins from the main menu.</div>
+        </div>
+        <div id="lobby-players" class="players"></div>
+      </div>
+      <h3>Choose your hero</h3>
+      <div id="hero-grid" class="hero-grid"></div>
+      <div id="hero-detail" class="hero-detail"></div>
+      <div class="row space actions">
+        <button id="btn-leave" class="ghost">Leave</button>
+        <button id="btn-lobby-options" class="ghost" type="button">Options</button>
+        <button id="btn-ready" class="primary" disabled>Ready</button>
+      </div>
+      <p id="lobby-error" class="error" role="alert"></p>
+    </div>
+  </section>
+
+  <!-- In-game HUD -->
+  <section id="hud" class="hidden">
+    <div id="scoreboard">
+      <div id="score-left" class="score"><span class="name"></span><span class="pips"></span></div>
+      <div id="round-info"><div id="round-label">Round 1</div><div id="round-timer">0:00</div></div>
+      <div id="score-right" class="score"><span class="pips"></span><span class="name"></span></div>
+    </div>
+    <div id="hud-actions">
+      <button id="btn-hud-options" type="button" title="Options">Options</button>
+      <button id="btn-quit" title="Leave match">Leave</button>
+    </div>
+    <div id="announce" class="hidden"></div>
+    <div id="aim-hint" class="hidden"></div>
+    <div id="bottom-bar">
+      <div id="status"></div>
+      <div id="hp-bar"><div id="hp-fill"></div><div id="shield-fill"></div><div id="hp-text">12 / 12</div></div>
+      <div id="abilities"></div>
+    </div>
+    <div id="ability-tip" class="hidden"></div>
+    <div id="lava-warning" class="hidden">The lava is rising</div>
+    <aside id="sandbox" class="hidden">
+      <h3>Training dummy</h3>
+      <label class="check"><input id="sand-free" type="checkbox" /><span class="switch"></span> Free ability cooldowns</label>
+      <label class="check"><input id="sand-props" type="checkbox" /><span class="switch"></span> Disable props</label>
+      <div class="row">
+        <button id="sand-refresh" type="button">Refresh cooldowns</button>
+        <button id="sand-reset" type="button">Reset dummy</button>
+      </div>
+      <label>Your hero
+        <select id="sand-hero"></select>
+      </label>
+      <label>Dummy hero
+        <select id="sand-bot"></select>
+      </label>
+    </aside>
+  </section>
+
+  <!-- Match end -->
+  <section id="screen-end" class="screen hidden">
+    <div class="panel end-panel">
+      <div class="eyebrow">Match over</div>
+      <h1 id="end-title" class="title">Victory</h1>
+      <p id="end-score" class="end-score"></p>
+      <div class="row"><button id="btn-back" class="primary large">Continue</button></div>
+    </div>
+  </section>
+
+  <!-- Options -->
+  <section id="screen-options" class="screen modal hidden">
+    <div class="panel options-panel">
+      <header class="panel-head">
+        <h2>Options</h2>
+        <button id="btn-options-close" class="icon-btn" type="button" aria-label="Close">&times;</button>
+      </header>
+      <h3>Audio</h3>
+      <label class="check"><input id="music-enabled" type="checkbox" checked /><span class="switch"></span> Music</label>
+      <label class="slider">
+        <span class="slider-head"><span>Music volume</span><span id="vol-music-val">21</span></span>
+        <span class="slider-row">
+          <input id="vol-music" type="range" min="0" max="100" value="21" />
+        </span>
+      </label>
+      <label class="slider">
+        <span class="slider-head"><span>Effects</span><span id="vol-sfx-val">100</span></span>
+        <span class="slider-row">
+          <input id="vol-sfx" type="range" min="0" max="100" value="100" />
+        </span>
+      </label>
+      <div class="row end"><button id="btn-options-back" class="primary" type="button">Back</button></div>
+    </div>
+  </section>
+
+  <div id="music-notice" class="hidden"></div>
+  <div id="toast" class="hidden"></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
